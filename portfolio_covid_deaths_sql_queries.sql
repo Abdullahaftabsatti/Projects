@@ -155,3 +155,5 @@ Join PortfolioProject..CovidVaccinations vac
 	On dea.location = vac.location
 	and dea.date = vac.date
 where dea.continent is not null 
+
+-- Then I visulaized these findings in tableau (https://public.tableau.com/app/profile/abdullah.aftab/viz/Covid_19_16689485808200/Dashboard1)
