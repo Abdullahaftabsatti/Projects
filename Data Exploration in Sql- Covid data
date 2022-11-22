@@ -156,4 +156,5 @@ Join PortfolioProject..CovidVaccinations vac
 	and dea.date = vac.date
 where dea.continent is not null 
 
-Then I visulaized these findings in tableau [Dashboard](https://public.tableau.com/app/profile/abdullah.aftab/viz/Covid_19_16689485808200/Dashboard1).
+-- Then I visulaized these findings in tableau [Dashboard](https://public.tableau.com/app/profile/abdullah.aftab/viz/Covid_19_16689485808200/Dashboard1).
+[youtube](https://www.youtube.com/watch?v=8rO7ztF4NtU&t=577s)
