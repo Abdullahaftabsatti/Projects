@@ -347,20 +347,86 @@ from hourly_activity;
 
 -- ANALYSIS
 
-/* Which device features are used most often */
+-- Device usage Analysis
+
 #1 Total users of each feature
-select count(distinct id) as sleeptracker_users
+select count(distinct id) as sleeptracker_users, 
+       count(distinct id) as activitytracker_users
 from daily_activity_sleep;          -- 24 users
-select count(distinct id) as stepstracker_users
+select count(distinct id) as activitytracker_users
 from dailyactivity_tbl;             -- 33 users
 
+#2 Device usage level
+select id, days_used,  
+	   case when days_used between 1 and 10 then 'Rare'
+            when days_used between 10 and 25 then 'Often'
+            when days_used > 25 then 'Regular'
+            else 'Wrong'
+            end as usage_type
+from (
+		select id, count(date) as days_used
+		from dailyactivity_tbl
+		group by id
+		order by days_used desc
+	 )tbl
+group by id, days_used;
 
-#2 Number of times each feature used
-select count(id) as sleeptracker_used
-from daily_activity_sleep;          -- 410
-select count(id) as stepstracker_used
-from dailyactivity_tbl;             -- 863 users
+#3 usage rate by day of the week
+select day, day_num, round(avg(total_users),2) as avg_users
+from (
+		select date, weekday(date)+1 as day_num, day, count(*) as total_users
+		from dailyactivity_tbl
+		group by date, day
+        order by date, day_num
+	 )tbl
+group by day, day_num
+order by day_num;
 
+#4 Usage rate by hour (avg users each hour of the day)
+select (row_number() over ())-1 as hour_num, 
+	   time(date_time)as hour_ofthe_day, round(avg(total_users),2) as avg_users
+from (
+		select date_time, time(date_time), count(*) as total_users
+		from hourly_activity
+		group by date_time
+	 )tbl
+group by time(date_time);
+
+-- User Wellness Profile
+
+#1 Average calories burned by hour
+select (row_number() over ())-1 as hour_num,
+	   hour, round(avg(total_calories),2) as avg_calories
+from (
+		select id, date_time, time(date_time) as hour, sum(Calories) as total_calories
+		from hourly_activity
+		group by id, date_time, hour
+	 )tbl
+group by hour;
+
+#2 Average steps taken by hour and days of the week
+select (row_number() over (partition by day order by hour))-1 as hour_num,
+       day, day_num, hour, round(avg(total_steps),2) as avg_steps
+from (
+		select id, day, weekday(date_time)+1 as day_num, time(date_time) as hour, sum(StepTotal) as total_steps
+		from hourly_activity
+		group by id, day, hour, day_num
+        order by day_num
+	 )tbl
+group by day, hour, day_num
+order by day_num, hour_num;
+
+#3 Average active time by day
+select day, round(avg(VeryActiveMinutes),2) as 'Very Active', 
+	   round(avg(FairlyActiveMinutes),2) as 'Fairly Active', 
+       round(avg(LightlyActiveMinutes),2) as 'Lightly Active'
+from dailyactivity_tbl
+group by day;
+
+#4 Average time in bed by day
+select day, avg(TotalMinutesAsleep), avg(TotalTimeInBed), avg(minutes_awake)
+from daily_activity_sleep
+group by day;
 
 
 
